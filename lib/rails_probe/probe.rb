@@ -14,22 +14,23 @@ module RailsProbe
     end
 
     def run(&block)
-      proc = Proc.new do |name, start, finish, id, payload|
-        backtrace = caller.dup
-        backtrace.shift while backtrace.present? && backtrace.first =~ /active_support\/notifications/
-        backtrace.pop   while backtrace.present? && backtrace.last !~ /rails_probe/
-        @stack << {
-          id:         id,
-          name:       name,
-          start:      start,
-          finish:     finish,
-          payload:    payload,
-          backtrace:  backtrace,
-        }
-      end
-      ActiveSupport::Notifications.subscribed(proc, @identifiers, &block)
+      ActiveSupport::Notifications.subscribed(method(:record), @identifiers, &block)
     ensure
       finalize
+    end
+
+    def record(name, start, finish, id, payload)
+      backtrace = caller.dup
+      backtrace.shift while backtrace.present? && backtrace.first =~ /active_support\/notifications/
+      backtrace.pop   while backtrace.present? && backtrace.last !~ /rails_probe/
+      @stack << {
+        id:         id,
+        name:       name,
+        start:      start,
+        finish:     finish,
+        payload:    payload,
+        backtrace:  backtrace,
+      }
     end
 
     def finalize
