@@ -22,7 +22,7 @@ module RailsProbe
     def record(name, start, finish, id, payload)
       backtrace = caller.dup
       backtrace.shift while backtrace.present? && backtrace.first =~ /active_support\/notifications/
-      backtrace.pop   while backtrace.present? && backtrace.last !~ /rails_probe/
+      backtrace.pop   while backtrace.present? && backtrace.last !~ /active_support\/notifications/
       @stack << {
         id:         id,
         name:       name,
